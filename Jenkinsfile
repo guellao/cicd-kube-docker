@@ -2,10 +2,12 @@ pipeline {
 
     agent any
 
+/*
 	tools {
         maven "MAVEN3"
         jdk "OracleJDK8"
     }
+*/
 
     environment {
         registry = "guellaoui/vproappdocK"
@@ -13,12 +15,6 @@ pipeline {
     }
 
     stages{
-
-        stage('Fetch code') {
-            steps {
-                git branch: 'main', url: 'https://github.com/guellao/cicd-kube-docker.git'
-            }
-        }
 
         stage('BUILD'){
             steps {
@@ -99,7 +95,7 @@ pipeline {
         }
 
         stage('Remove Unused docker image'){
-            staps {
+            steps {
                 sh "docker rmi $registry:V$BUILD_NUMBER"
             }
         }
@@ -107,8 +103,9 @@ pipeline {
         stage('kubernetes deploy'){
             agent {label 'KOPS'}
                 steps {
-                sh "helm upgrade --install --force vprofile-stack helm/vprofilecharts --set appimage=${registry}:V${$BUILD_BUILD_NUMBER} --namespace prod"
+                    sh "helm upgrade --install --force vprofile-stack helm/vprofilecharts --set appimage=${registry}:V${$BUILD_BUILD_NUMBER} --namespace prod"
                 }
+            }
         }
 
     }
